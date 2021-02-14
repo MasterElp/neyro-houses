@@ -4,6 +4,7 @@ import graph
 import esper
 import random
 import time
+import math
 import _pickle as cPickle
 
 stock_array = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -123,9 +124,13 @@ class Search_aim(esper.Processor):
         print("Search_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             print("resorce_search")
+            min_distance = 100
             for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
                 if (not stocked.is_true):
-                    if Roll.dice_1000(100):
+                    distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                    if (distance < min_distance):
+                        min_distance = distance
+                        print(min_distance)
                         aim.has_aim = True
                         #busy.is_true = True
                         aim.x = block_position.x
