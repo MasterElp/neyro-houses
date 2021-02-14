@@ -68,12 +68,96 @@ class Paint:
         self.color = (r_, g_, b_)
         self. alfa = alfa_
 
+class Stocked:
+    def __init__(self):
+        self.is_true = False
+
+class Full:
+    def __init__(self):
+        self.is_true = False
+
+class Busy:
+    def __init__(self):
+        self.is_true = False
+
+class Aim:
+    def __init__(self):
+        self.has_aim = False
+        self.x = 0
+        self.y = 0
+
+class Search_aim(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        print("Search_aim")
+        for user_entity, (user, position, busy, aim) in self.world.get_components(User, Position, Busy, Aim):
+            #if (not busy.is_true and not aim.has_aim):
+            print("resorce_search")
+            block_position = self.resorce_search()
+            if (block_position != None):
+                aim.has_aim = True
+                aim.x = block_position.x
+                aim.y = block_position.y
+
+    def resorce_search(self):
+        for block_entity, (block, position, stocked) in self.world.get_components(Block, Position, Stocked):
+            if (not stocked.is_true):
+                print(position)
+                return position
+        return None
+
+    def haul_block(self):
+        print("haul_block")
+
+
+class Move(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        print("move")
+        for user_entity, (user, position, aim, busy) in self.world.get_components(User, Position, Aim, Busy):
+            if (aim.has_aim):
+                if (position.x == aim.x and position.y == aim.y):
+                    aim.has_aim = False
+                    busy.is_true = True
+                    print("!!!!!!!!")
+                else:
+                    if (position.x > aim.x):
+                        position.x-=1
+                    elif (position.x < aim.x):
+                        position.x+=1
+                    if (position.y > aim.y):
+                        position.y-=1
+                    elif (position.y < aim.y):
+                        position.y+=1
+
 class Haul(esper.Processor):
     def __init__(self):
         super().__init__()
 
     def process(self):
-        pass
+        print("haul")
+        for user_entity, (user, position, busy, aim) in self.world.get_components(User, Position, Busy, Aim):
+            for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
+                if (position.x == block_position.x and position.y == block_position.y):
+                        for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
+                            if (not full.is_true):
+                                if (block_position.x == stock_position.x and block_position.y == stock_position.y):
+                                    full.is_true = True
+                                    stocked.is_true = True
+                                    print("++++++")
+                                else:
+                                    if (block_position.x > stock_position.x):
+                                        block_position.x-=1
+                                    elif (block_position.x < stock_position.x):
+                                        block_position.x+=1
+                                    if (block_position.y > stock_position.y):
+                                        block_position.y-=1
+                                    elif (block_position.y < stock_position.y):
+                                        block_position.y+=1   
 
 class Show(esper.Processor):
     def __init__(self):
@@ -85,17 +169,21 @@ class Show(esper.Processor):
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
 
-
 def main():
     inter = Interface()
     world = esper.World()
     random.seed()
+    block = {}
 
-    user = world.create_entity(User(), Position(10, 10), Paint(125, 125, 125, 200))
-    block = world.create_entity(Block(), Position(20, 20), Paint(250, 50, 50, 200))
-    stock = world.create_entity(Stock(), Position(20, 20))
+    user = world.create_entity(User(), Position(10, 10), Paint(125, 125, 125, 200), Busy(), Aim())
+    for i in range (10):
+        block[i] = world.create_entity(Block(), Position(random.randint(0, 60), random.randint(0, 60)), Paint(250, 50, 50, 200), Stocked())
+    stock = world.create_entity(Stock(), Position(30, 30), Full())
 
     world.add_processor(Show())
+    world.add_processor(Search_aim())
+    world.add_processor(Move())
+    world.add_processor(Haul())
 
     while 1:
         inter.step_number += 1
@@ -103,7 +191,7 @@ def main():
         inter.step()
        
         world.process()
-        time.sleep(1)
+        time.sleep(0.2)
         pygame.display.flip()
     
 
