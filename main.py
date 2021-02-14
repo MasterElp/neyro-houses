@@ -178,22 +178,26 @@ class Haul(esper.Processor):
             for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
                     min_distance = 100
-                    #busy.is_true = False
-                    #aim.has_aim = False
+                    found = False
                     for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
                         if (not full.is_true):
+                            found = True
                             distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
                             if (distance < min_distance):
                                 min_distance = distance
-                                if (block_position.x > stock_position.x):
-                                    block_position.x-=1
-                                elif (block_position.x < stock_position.x):
-                                    block_position.x+=1
-                                if (block_position.y > stock_position.y):
-                                    block_position.y-=1
-                                elif (block_position.y < stock_position.y):
-                                    block_position.y+=1
-                                break
+                                near_x = stock_position.x
+                                near_y = stock_position.y
+
+                    if (found):
+                        if (block_position.x > near_x):
+                            block_position.x-=1
+                        elif (block_position.x < near_x):
+                            block_position.x+=1
+                        if (block_position.y > near_y):
+                            block_position.y-=1
+                        elif (block_position.y < near_y):
+                            block_position.y+=1
+                        
 
 
 class Stock_check(esper.Processor):
