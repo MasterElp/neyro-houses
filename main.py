@@ -6,6 +6,17 @@ import random
 import time
 import _pickle as cPickle
 
+stock_array = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
 class Interface:
     bk = object
     screen = object
@@ -143,21 +154,27 @@ class Haul(esper.Processor):
         for user_entity, (user, position, busy, aim) in self.world.get_components(User, Position, Busy, Aim):
             for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
                 if (position.x == block_position.x and position.y == block_position.y):
-                        for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
-                            if (not full.is_true):
-                                if (block_position.x == stock_position.x and block_position.y == stock_position.y):
-                                    full.is_true = True
-                                    stocked.is_true = True
-                                    print("++++++")
-                                else:
-                                    if (block_position.x > stock_position.x):
-                                        block_position.x-=1
-                                    elif (block_position.x < stock_position.x):
-                                        block_position.x+=1
-                                    if (block_position.y > stock_position.y):
-                                        block_position.y-=1
-                                    elif (block_position.y < stock_position.y):
-                                        block_position.y+=1   
+                    for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
+                        if (not full.is_true):
+                            print ("stock_position:")
+                            print (stock_position.x)
+                            print (stock_position.y)
+                            if (block_position.x == stock_position.x and block_position.y == stock_position.y):
+                                full.is_true = True
+                                stocked.is_true = True
+                                print("++++++")
+                            else:
+                                if (block_position.x > stock_position.x):
+                                    block_position.x-=1
+                                elif (block_position.x < stock_position.x):
+                                    block_position.x+=1
+                                if (block_position.y > stock_position.y):
+                                    block_position.y-=1
+                                elif (block_position.y < stock_position.y):
+                                    block_position.y+=1
+                                break
+
+
 
 class Show(esper.Processor):
     def __init__(self):
@@ -165,7 +182,6 @@ class Show(esper.Processor):
 
     def process(self):
         for entity, (position, paint) in self.world.get_components(Position, Paint):
-            x = entity    
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
 
@@ -174,11 +190,15 @@ def main():
     world = esper.World()
     random.seed()
     block = {}
+    stock = {}
 
     user = world.create_entity(User(), Position(10, 10), Paint(125, 125, 125, 200), Busy(), Aim())
     for i in range (10):
-        block[i] = world.create_entity(Block(), Position(random.randint(0, 60), random.randint(0, 60)), Paint(250, 50, 50, 200), Stocked())
-    stock = world.create_entity(Stock(), Position(30, 30), Full())
+        block[i] = world.create_entity(Block(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(250, 50, 50, 200), Stocked())
+    for x in range (len(stock_array)): 
+        for y in range (len(stock_array[x])):
+            if (stock_array[x][y] == 1):
+                stock[i] = world.create_entity(Stock(), Position(x, y), Full())
 
     world.add_processor(Show())
     world.add_processor(Search_aim())
