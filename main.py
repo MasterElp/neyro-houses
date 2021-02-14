@@ -50,6 +50,15 @@ class Interface:
         graph.screen_text('step: ' + str(self.step_number), 20, (self.map_y + 60))
 
 
+class Roll:
+    @staticmethod
+    def dice_1000(c_probability):
+        dice = random.randint(0, 1000)
+        if dice <= c_probability:
+            return True
+        else:
+            return False
+
 class Map:
     AREA_X = 80
     AREA_Y = 60
@@ -114,21 +123,13 @@ class Search_aim(esper.Processor):
         print("Search_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             print("resorce_search")
-            block_position = self.resorce_search()
-            if (block_position != None):
-                aim.has_aim = True
-                aim.x = block_position.x
-                aim.y = block_position.y
-
-    def resorce_search(self):
-        for block_entity, (block, position, stocked) in self.world.get_components(Block, Position, Stocked):
-            if (not stocked.is_true):
-                print(position)
-                return position
-        return None
-
-    def haul_block(self):
-        print("haul_block")
+            for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
+                if (not stocked.is_true):
+                    if Roll.dice_1000(100):
+                        aim.has_aim = True
+                        #busy.is_true = True
+                        aim.x = block_position.x
+                        aim.y = block_position.y
 
 
 class Move(esper.Processor):
@@ -206,19 +207,20 @@ def main():
     user = {}
 
     for i in range (5):
-        user[i] = world.create_entity(User(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(125, 125, 125, 200), Aim())
+        user[i] = world.create_entity(User(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(125, 125, 125, 200), Aim())
     for i in range (28):
-        block[i] = world.create_entity(Block(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(250, 50, 50, 200), Stocked(), Busy())
+        block[i] = world.create_entity(Block(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(250, 50, 50, 200), Stocked(), Busy())
     for y in range (len(stock_array)): 
         for x in range (len(stock_array[y])):
             if (stock_array[y][x] == 1):
-                stock[i] = world.create_entity(Stock(), Position(x, y), Full())
+                stock[i] = world.create_entity(Stock(), Position(x + 50, y + 20), Full())
 
     world.add_processor(Stock_check())
-    world.add_processor(Show())
-    world.add_processor(Search_aim())
-    world.add_processor(Move())
     world.add_processor(Haul())
+    world.add_processor(Move())
+    world.add_processor(Search_aim())
+    world.add_processor(Show())
+    
 
     while 1:
         inter.step_number += 1
