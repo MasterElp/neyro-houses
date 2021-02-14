@@ -115,6 +115,7 @@ class Aim:
         self.has_aim = False
         self.x = 0
         self.y = 0
+        self.entity = 1000
 
 class Search_aim(esper.Processor):
     def __init__(self):
@@ -125,16 +126,22 @@ class Search_aim(esper.Processor):
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             print("resorce_search")
             min_distance = 100
-            for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
-                if (not stocked.is_true):
+            found = False
+            for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
+                if (not stocked.is_true and not busy.is_true):
+                    found = True
                     distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
                     if (distance < min_distance):
                         min_distance = distance
-                        print(min_distance)
-                        aim.has_aim = True
-                        #busy.is_true = True
-                        aim.x = block_position.x
-                        aim.y = block_position.y
+                        near_x = block_position.x
+                        near_y = block_position.y
+
+            if (found):
+                aim.has_aim = True
+                busy.is_true = True
+                aim.x = near_x
+                aim.y = near_y
+                aim.entity = block_entity
 
 
 class Move(esper.Processor):
@@ -147,7 +154,10 @@ class Move(esper.Processor):
             if (aim.has_aim):
                 if (position.x == aim.x and position.y == aim.y):
                     aim.has_aim = False
+                    busy = self.world.component_for_entity(aim.entity, Busy)
+                    busy.is_true = False
                     print("!!!!!!!!")
+                    pass
                 else:
                     if (position.x > aim.x):
                         position.x-=1
@@ -165,19 +175,25 @@ class Haul(esper.Processor):
     def process(self):
         print("haul")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
+            for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
+                    min_distance = 100
+                    #busy.is_true = False
+                    #aim.has_aim = False
                     for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
                         if (not full.is_true):
-                            if (block_position.x > stock_position.x):
-                                block_position.x-=1
-                            elif (block_position.x < stock_position.x):
-                                block_position.x+=1
-                            if (block_position.y > stock_position.y):
-                                block_position.y-=1
-                            elif (block_position.y < stock_position.y):
-                                block_position.y+=1
-                            break
+                            distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                            if (distance < min_distance):
+                                min_distance = distance
+                                if (block_position.x > stock_position.x):
+                                    block_position.x-=1
+                                elif (block_position.x < stock_position.x):
+                                    block_position.x+=1
+                                if (block_position.y > stock_position.y):
+                                    block_position.y-=1
+                                elif (block_position.y < stock_position.y):
+                                    block_position.y+=1
+                                break
 
 
 class Stock_check(esper.Processor):
