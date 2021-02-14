@@ -22,10 +22,10 @@ def draw_background():
    pygame.display.flip()
    return background
 
-def init_window(c_max_x, c_max_y):
+def init_window(c_max_x, c_max_y, caption):
    pygame.init()
    window = pygame.display.set_mode((c_max_x, c_max_y))
-   pygame.display.set_caption('My own little world')
+   pygame.display.set_caption(caption)
 
 def load_image(name, colorkey = None):
    fullname = os.path.join('data', name)
@@ -59,7 +59,7 @@ def color_norm(c_r, c_g, c_b):
 def screen_text(c_text, c_x, c_y, c_color = (50, 200, 50)):
    screen = pygame.display.get_surface()
    text = str(c_text)
-   myFont = pygame.font.SysFont("None", 20)
+   myFont = pygame.font.SysFont("None", 30)
    fontImage = myFont.render(text, 0, c_color)
    screen.blit(fontImage, (c_x, c_y))
 

@@ -42,7 +42,7 @@ class Interface:
         graph.SCALE = 10
         self.map_x = Map.AREA_X * graph.SCALE
         self.map_y = Map.AREA_Y * graph.SCALE
-        graph.init_window((self.map_x + 400), (self.map_y + 200))
+        graph.init_window((self.map_x + 400), (self.map_y + 200), "Для Алии")
         self.bk = graph.draw_background()
         pygame.mouse.set_visible(True)
         self.screen = pygame.display.get_surface()
@@ -122,13 +122,13 @@ class Search_aim(esper.Processor):
         super().__init__()
 
     def process(self):
-        print("Search_aim")
+        #print("Search_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             if(not aim.has_aim):
                 min_distance = 1000
                 found = False
-                print("user_entity")
-                print(user_entity)
+                #print("user_entity")
+                #print(user_entity)
                 for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                     if ((not stocked.is_true) and (not busy.is_true)):
                         found = True
@@ -140,8 +140,8 @@ class Search_aim(esper.Processor):
                             near_entity = block_entity
 
                 if (found):
-                    print("near_entity")
-                    print(near_entity)
+                    #print("near_entity")
+                    #print(near_entity)
                     aim.has_aim = True
                     aim.x = near_x
                     aim.y = near_y
@@ -155,7 +155,7 @@ class Move(esper.Processor):
         super().__init__()
 
     def process(self):
-        print("move")
+        #print("move")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             if (aim.has_aim):
                 if (position.x == aim.x and position.y == aim.y):
@@ -178,7 +178,7 @@ class Haul(esper.Processor):
         super().__init__()
 
     def process(self):
-        print("haul")
+        #print("haul")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
@@ -220,7 +220,7 @@ class Stock_check(esper.Processor):
                     if (block_position.x == stock_position.x and block_position.y == stock_position.y):
                         full.is_true = True
                         stocked.is_true = True
-                        print("!!!++++++!!!")
+                        #print("!!!++++++!!!")
 
 
 class Show(esper.Processor):
@@ -231,6 +231,17 @@ class Show(esper.Processor):
         for entity, (position, paint) in self.world.get_components(Position, Paint):
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
+class End(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        not_full = False
+        for entity, (full, stock) in self.world.get_components(Full, Stock):
+            if (not full.is_true):
+                not_full = True
+        if (not not_full):
+            graph.screen_text("С днем святого Валентина, Алия! Я люблю тебя!", 310, 280, c_color = (200, 100, 50))
 
 def main():
     inter = Interface()
@@ -243,7 +254,7 @@ def main():
     for i in range (5):
         user[i] = world.create_entity(User(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(125, 125, 125, 100), Aim())
     for i in range (28):
-        block[i] = world.create_entity(Block(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(250, 50, 50, 100), Stocked(), Busy())
+        block[i] = world.create_entity(Block(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(250, 50, 50, 100), Stocked(), Busy())
     for y in range (len(stock_array)): 
         for x in range (len(stock_array[y])):
             if (stock_array[y][x] == 1):
@@ -254,6 +265,7 @@ def main():
     world.add_processor(Haul())
     world.add_processor(Search_aim())
     world.add_processor(Show())
+    world.add_processor(End())
     
 
     while 1:
@@ -261,8 +273,8 @@ def main():
         inter.screen.blit(inter.bk, (0, 0))
         inter.step()
        
+        time.sleep(0.1)
         world.process()
-        time.sleep(0.2)
         pygame.display.flip()
     
 
