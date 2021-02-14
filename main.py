@@ -1,6 +1,9 @@
 import pygame
 from pygame.locals import *
 import graph
+import esper
+import random
+import time
 import _pickle as cPickle
 
 class Interface:
@@ -43,16 +46,64 @@ class Map:
             c_y -= Map.AREA_Y
         return c_x, c_y
 
+class User:
+    def __init__(self):
+        pass
+
+class Block:
+    def __init__(self):
+        pass
+
+class Stock:
+    def __init__(self):
+        pass
+
+class Position:
+    def __init__(self, x_, y_):
+        self.x = x_
+        self.y = y_
+
+class Paint:
+    def __init__(self, r_, g_, b_, alfa_):
+        self.color = (r_, g_, b_)
+        self. alfa = alfa_
+
+class Haul(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        pass
+
+class Show(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        for entity, (position, paint) in self.world.get_components(Position, Paint):
+            x = entity    
+            graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
+
+
 
 def main():
     inter = Interface()
+    world = esper.World()
+    random.seed()
+
+    user = world.create_entity(User(), Position(10, 10), Paint(125, 125, 125, 200))
+    block = world.create_entity(Block(), Position(20, 20), Paint(250, 50, 50, 200))
+    stock = world.create_entity(Stock(), Position(20, 20))
+
+    world.add_processor(Show())
 
     while 1:
         inter.step_number += 1
         inter.screen.blit(inter.bk, (0, 0))
         inter.step()
        
-        graph.draw_rect(10, 10, (250, 25, 0), 200)
+        world.process()
+        time.sleep(1)
         pygame.display.flip()
     
 
