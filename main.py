@@ -124,24 +124,30 @@ class Search_aim(esper.Processor):
     def process(self):
         print("Search_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            print("resorce_search")
-            min_distance = 100
-            found = False
-            for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
-                if (not stocked.is_true and not busy.is_true):
-                    found = True
-                    distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
-                    if (distance < min_distance):
-                        min_distance = distance
-                        near_x = block_position.x
-                        near_y = block_position.y
+            if(not aim.has_aim):
+                min_distance = 1000
+                found = False
+                print("user_entity")
+                print(user_entity)
+                for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
+                    if ((not stocked.is_true) and (not busy.is_true)):
+                        found = True
+                        distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                        if (distance < min_distance):
+                            min_distance = distance
+                            near_x = block_position.x
+                            near_y = block_position.y
+                            near_entity = block_entity
 
-            if (found):
-                aim.has_aim = True
-                busy.is_true = True
-                aim.x = near_x
-                aim.y = near_y
-                aim.entity = block_entity
+                if (found):
+                    print("near_entity")
+                    print(near_entity)
+                    aim.has_aim = True
+                    aim.x = near_x
+                    aim.y = near_y
+                    aim.entity = near_entity
+                    near_busy = self.world.component_for_entity(near_entity, Busy)
+                    near_busy.is_true = True
 
 
 class Move(esper.Processor):
@@ -156,7 +162,6 @@ class Move(esper.Processor):
                     aim.has_aim = False
                     busy = self.world.component_for_entity(aim.entity, Busy)
                     busy.is_true = False
-                    print("!!!!!!!!")
                     pass
                 else:
                     if (position.x > aim.x):
@@ -177,12 +182,16 @@ class Haul(esper.Processor):
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
-                    min_distance = 100
+                    #aim.has_aim = False
+                    #busy = self.world.component_for_entity(aim.entity, Busy)
+                    #busy.is_true = False
+
+                    min_distance = 1000
                     found = False
                     for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
                         if (not full.is_true):
                             found = True
-                            distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                            distance = math.sqrt((block_position.x - stock_position.x)**2 + (block_position.y - stock_position.y)**2)
                             if (distance < min_distance):
                                 min_distance = distance
                                 near_x = stock_position.x
@@ -232,17 +241,17 @@ def main():
     user = {}
 
     for i in range (5):
-        user[i] = world.create_entity(User(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(125, 125, 125, 200), Aim())
+        user[i] = world.create_entity(User(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(125, 125, 125, 100), Aim())
     for i in range (28):
-        block[i] = world.create_entity(Block(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(250, 50, 50, 200), Stocked(), Busy())
+        block[i] = world.create_entity(Block(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(250, 50, 50, 100), Stocked(), Busy())
     for y in range (len(stock_array)): 
         for x in range (len(stock_array[y])):
             if (stock_array[y][x] == 1):
                 stock[i] = world.create_entity(Stock(), Position(x + 50, y + 20), Full())
 
     world.add_processor(Stock_check())
-    world.add_processor(Haul())
     world.add_processor(Move())
+    world.add_processor(Haul())
     world.add_processor(Search_aim())
     world.add_processor(Show())
     
