@@ -132,7 +132,8 @@ class Search_aim(esper.Processor):
                 for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                     if ((not stocked.is_true) and (not busy.is_true)):
                         found = True
-                        distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                        #distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
+                        distance = 0
                         if (distance < min_distance):
                             min_distance = distance
                             near_x = block_position.x
@@ -182,10 +183,6 @@ class Haul(esper.Processor):
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
-                    #aim.has_aim = False
-                    #busy = self.world.component_for_entity(aim.entity, Busy)
-                    #busy.is_true = False
-
                     min_distance = 1000
                     found = False
                     for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
@@ -241,7 +238,7 @@ class End(esper.Processor):
             if (not full.is_true):
                 not_full = True
         if (not not_full):
-            graph.screen_text("С днем святого Валентина, Алия! Я люблю тебя!", 310, 280, c_color = (200, 100, 50))
+            graph.screen_text("С днем святого Валентина, Алия! Я люблю тебя!", 325, 280, c_color = (200, 100, 50))
 
 def main():
     inter = Interface()
@@ -251,10 +248,10 @@ def main():
     stock = {}
     user = {}
 
-    for i in range (5):
-        user[i] = world.create_entity(User(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(125, 125, 125, 100), Aim())
+    for i in range (15):
+        user[i] = world.create_entity(User(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100), Aim())
     for i in range (28):
-        block[i] = world.create_entity(Block(), Position(random.randint(50, 70), random.randint(20, 40)), Paint(250, 50, 50, 100), Stocked(), Busy())
+        block[i] = world.create_entity(Block(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(250, 50, 50, 200), Stocked(), Busy())
     for y in range (len(stock_array)): 
         for x in range (len(stock_array[y])):
             if (stock_array[y][x] == 1):
