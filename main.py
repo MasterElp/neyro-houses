@@ -112,8 +112,7 @@ class Search_aim(esper.Processor):
 
     def process(self):
         print("Search_aim")
-        for user_entity, (user, position, busy, aim) in self.world.get_components(User, Position, Busy, Aim):
-            #if (not busy.is_true and not aim.has_aim):
+        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             print("resorce_search")
             block_position = self.resorce_search()
             if (block_position != None):
@@ -138,11 +137,10 @@ class Move(esper.Processor):
 
     def process(self):
         print("move")
-        for user_entity, (user, position, aim, busy) in self.world.get_components(User, Position, Aim, Busy):
+        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             if (aim.has_aim):
                 if (position.x == aim.x and position.y == aim.y):
                     aim.has_aim = False
-                    busy.is_true = True
                     print("!!!!!!!!")
                 else:
                     if (position.x > aim.x):
@@ -160,7 +158,7 @@ class Haul(esper.Processor):
 
     def process(self):
         print("haul")
-        for user_entity, (user, position, busy, aim) in self.world.get_components(User, Position, Busy, Aim):
+        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
                     for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
@@ -208,9 +206,9 @@ def main():
     user = {}
 
     for i in range (5):
-        user[i] = world.create_entity(User(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(125, 125, 125, 200), Busy(), Aim())
+        user[i] = world.create_entity(User(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(125, 125, 125, 200), Aim())
     for i in range (28):
-        block[i] = world.create_entity(Block(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(250, 50, 50, 200), Stocked())
+        block[i] = world.create_entity(Block(), Position(random.randint(0, 20), random.randint(0, 20)), Paint(250, 50, 50, 200), Stocked(), Busy())
     for y in range (len(stock_array)): 
         for x in range (len(stock_array[y])):
             if (stock_array[y][x] == 1):
