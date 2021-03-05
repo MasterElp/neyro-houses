@@ -7,25 +7,6 @@ import time
 import math
 import _pickle as cPickle
 
-stock_array = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                ]
 
 class Interface:
     bk = object
@@ -117,14 +98,21 @@ class Aim:
         self.y = 0
         self.entity = 1000
 
-class Search_aim(esper.Processor):
+class Create_stock(esper.Processor):
     def __init__(self):
         super().__init__()
 
     def process(self):
-        #print("Search_aim")
+        pass
+
+class User_search_aim(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        #print("User_search_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            if(not aim.has_aim):
+            if (not aim.has_aim):
                 min_distance = 1000
                 found = False
                 #print("user_entity")
@@ -151,12 +139,12 @@ class Search_aim(esper.Processor):
                     near_busy.is_true = True
 
 
-class Move(esper.Processor):
+class User_move_aim(esper.Processor):
     def __init__(self):
         super().__init__()
 
     def process(self):
-        #print("move")
+        #print("User_move_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             if (aim.has_aim):
                 if (position.x == aim.x and position.y == aim.y):
@@ -174,12 +162,12 @@ class Move(esper.Processor):
                     elif (position.y < aim.y):
                         position.y+=1
 
-class Haul(esper.Processor):
+class User_houl_aim(esper.Processor):
     def __init__(self):
         super().__init__()
 
     def process(self):
-        #print("haul")
+        #print("User_houl_aim")
         for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
             for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
                 if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
@@ -253,15 +241,11 @@ def main():
         user[i] = world.create_entity(User(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100), Aim())
     for i in range (95):
         block[i] = world.create_entity(Block(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(250, 50, 50, 200), Stocked(), Busy())
-    for y in range (len(stock_array)): 
-        for x in range (len(stock_array[y])):
-            if (stock_array[y][x] == 1):
-                stock[i] = world.create_entity(Stock(), Position(x + 50, y + 20), Full())
 
     world.add_processor(Stock_check())
-    world.add_processor(Move())
-    world.add_processor(Haul())
-    world.add_processor(Search_aim())
+    world.add_processor(User_move_aim())
+    world.add_processor(User_houl_aim())
+    world.add_processor(User_search_aim())
     world.add_processor(Show())
     world.add_processor(End())
     
