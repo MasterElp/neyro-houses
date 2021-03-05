@@ -1,5 +1,4 @@
-import pygame
-from pygame.locals import *
+# Install pygame
 import graph
 import esper
 import random
@@ -10,14 +9,6 @@ import keyboard
 
 
 class Interface:
-    bk = object
-    screen = object
-    water_show = True
-    earth_show = True
-    temperature_show = False
-    unit_show = True
-    grass_show = True
-    ground_show = True
     step_number = 0
     pause = False
 
@@ -26,11 +17,9 @@ class Interface:
         self.map_x = Map.AREA_X * graph.SCALE
         self.map_y = Map.AREA_Y * graph.SCALE
         graph.init_window((self.map_x + 400), (self.map_y + 200), "My own little world")
-        self.bk = graph.draw_background()
-        pygame.mouse.set_visible(True)
-        self.screen = pygame.display.get_surface()
 
     def step(self):
+        graph.blit()
         graph.screen_text('step: ' + str(self.step_number), 20, (self.map_y + 60))
 
     def pause_pressed(self, e):
@@ -89,7 +78,13 @@ class Show(esper.Processor):
         for entity, (position, paint) in self.world.get_components(Position, Paint):
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
+class Move(esper.Processor):
+    def __init__(self):
+        super().__init__()
 
+    def process(self):
+        for entity, (position, paint) in self.world.get_components(Position, Paint):
+            position.x += 1
 
 def main():
     inter = Interface()
@@ -102,6 +97,7 @@ def main():
 
 
     world.add_processor(Show())
+    world.add_processor(Move())
 
     
 
@@ -113,12 +109,12 @@ def main():
     try:
         while True:
             inter.step_number += 1
-            inter.screen.blit(inter.bk, (0, 0))
             inter.step()
         
             time.sleep(0.1)
             world.process()
-            pygame.display.flip()
+            graph.flip()
+            
             
             while (inter.pause):
                 pass
