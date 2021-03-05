@@ -5,7 +5,8 @@ import esper
 import random
 import time
 import math
-import _pickle as cPickle
+#import _pickle as cPickle
+import keyboard
 
 
 class Interface:
@@ -18,18 +19,27 @@ class Interface:
     grass_show = True
     ground_show = True
     step_number = 0
+    pause = False
 
     def __init__(self):
         graph.SCALE = 10
         self.map_x = Map.AREA_X * graph.SCALE
         self.map_y = Map.AREA_Y * graph.SCALE
-        graph.init_window((self.map_x + 400), (self.map_y + 200), "Для Алии")
+        graph.init_window((self.map_x + 400), (self.map_y + 200), "My own little world")
         self.bk = graph.draw_background()
         pygame.mouse.set_visible(True)
         self.screen = pygame.display.get_surface()
 
     def step(self):
         graph.screen_text('step: ' + str(self.step_number), 20, (self.map_y + 60))
+
+    def pause_pressed(self, e):
+        if (self.pause):        
+            self.pause = False
+            print ("start")
+        else:
+            self.pause = True
+            print ("pause")
 
 
 class Roll:
@@ -57,15 +67,7 @@ class Map:
             c_y -= Map.AREA_Y
         return c_x, c_y
 
-class User:
-    def __init__(self):
-        pass
-
-class Block:
-    def __init__(self):
-        pass
-
-class Stock:
+class Mind:
     def __init__(self):
         pass
 
@@ -79,136 +81,6 @@ class Paint:
         self.color = (r_, g_, b_)
         self. alfa = alfa_
 
-class Stocked:
-    def __init__(self):
-        self.is_true = False
-
-class Full:
-    def __init__(self):
-        self.is_true = False
-
-class Busy:
-    def __init__(self):
-        self.is_true = False
-
-class Aim:
-    def __init__(self):
-        self.has_aim = False
-        self.x = 0
-        self.y = 0
-        self.entity = 1000
-
-class Create_stock(esper.Processor):
-    def __init__(self):
-        super().__init__()
-
-    def process(self):
-        pass
-
-class User_search_aim(esper.Processor):
-    def __init__(self):
-        super().__init__()
-
-    def process(self):
-        #print("User_search_aim")
-        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            if (not aim.has_aim):
-                min_distance = 1000
-                found = False
-                #print("user_entity")
-                #print(user_entity)
-                for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
-                    if ((not stocked.is_true) and (not busy.is_true)):
-                        found = True
-                        #distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
-                        distance = 0
-                        if (distance < min_distance):
-                            min_distance = distance
-                            near_x = block_position.x
-                            near_y = block_position.y
-                            near_entity = block_entity
-
-                if (found):
-                    #print("near_entity")
-                    #print(near_entity)
-                    aim.has_aim = True
-                    aim.x = near_x
-                    aim.y = near_y
-                    aim.entity = near_entity
-                    near_busy = self.world.component_for_entity(near_entity, Busy)
-                    near_busy.is_true = True
-
-
-class User_move_aim(esper.Processor):
-    def __init__(self):
-        super().__init__()
-
-    def process(self):
-        #print("User_move_aim")
-        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            if (aim.has_aim):
-                if (position.x == aim.x and position.y == aim.y):
-                    aim.has_aim = False
-                    busy = self.world.component_for_entity(aim.entity, Busy)
-                    busy.is_true = False
-                    pass
-                else:
-                    if (position.x > aim.x):
-                        position.x-=1
-                    elif (position.x < aim.x):
-                        position.x+=1
-                    if (position.y > aim.y):
-                        position.y-=1
-                    elif (position.y < aim.y):
-                        position.y+=1
-
-class User_houl_aim(esper.Processor):
-    def __init__(self):
-        super().__init__()
-
-    def process(self):
-        #print("User_houl_aim")
-        for user_entity, (user, position, aim) in self.world.get_components(User, Position, Aim):
-            for block_entity, (block, block_position, stocked, busy) in self.world.get_components(Block, Position, Stocked, Busy):
-                if (position.x == block_position.x and position.y == block_position.y and not stocked.is_true):
-                    min_distance = 1000
-                    found = False
-                    for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
-                        if (not full.is_true):
-                            found = True
-                            #distance = math.sqrt((block_position.x - position.x)**2 + (block_position.y - position.y)**2)
-                            distance = 0
-                            if (distance < min_distance):
-                                min_distance = distance
-                                near_x = stock_position.x
-                                near_y = stock_position.y
-
-                    if (found):
-                        if (block_position.x > near_x):
-                            block_position.x-=1
-                        elif (block_position.x < near_x):
-                            block_position.x+=1
-                        if (block_position.y > near_y):
-                            block_position.y-=1
-                        elif (block_position.y < near_y):
-                            block_position.y+=1
-                        
-
-
-class Stock_check(esper.Processor):
-    def __init__(self):
-        super().__init__()
-
-    def process(self):
-        for block_entity, (block, block_position, stocked) in self.world.get_components(Block, Position, Stocked):
-            for stock_entity, (stock, stock_position, full) in self.world.get_components(Stock, Position, Full):
-                if (not full.is_true and not stocked.is_true):
-                    if (block_position.x == stock_position.x and block_position.y == stock_position.y):
-                        full.is_true = True
-                        stocked.is_true = True
-                        #print("!!!++++++!!!")
-
-
 class Show(esper.Processor):
     def __init__(self):
         super().__init__()
@@ -217,47 +89,42 @@ class Show(esper.Processor):
         for entity, (position, paint) in self.world.get_components(Position, Paint):
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
-class End(esper.Processor):
-    def __init__(self):
-        super().__init__()
 
-    def process(self):
-        not_full = False
-        for entity, (full, stock) in self.world.get_components(Full, Stock):
-            if (not full.is_true):
-                not_full = True
-        if (not not_full):
-            graph.screen_text("End", 325, 280, c_color = (200, 100, 50))
 
 def main():
     inter = Interface()
     world = esper.World()
     random.seed()
-    block = {}
-    stock = {}
-    user = {}
+    creature = {}
 
     for i in range (15):
-        user[i] = world.create_entity(User(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100), Aim())
-    for i in range (95):
-        block[i] = world.create_entity(Block(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(250, 50, 50, 200), Stocked(), Busy())
+        creature[i] = world.create_entity(Mind(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100))
 
-    world.add_processor(Stock_check())
-    world.add_processor(User_move_aim())
-    world.add_processor(User_houl_aim())
-    world.add_processor(User_search_aim())
+
     world.add_processor(Show())
-    world.add_processor(End())
+
     
 
-    while 1:
-        inter.step_number += 1
-        inter.screen.blit(inter.bk, (0, 0))
-        inter.step()
-       
-        time.sleep(0.1)
-        world.process()
-        pygame.display.flip()
+    #keyboard.add_hotkey('r', print, args=[world.component_for_entity(user, Relations).relations2others])
+    keyboard.on_release_key('enter', inter.pause_pressed)
+        
+
+    # A dummy main loop:
+    try:
+        while True:
+            inter.step_number += 1
+            inter.screen.blit(inter.bk, (0, 0))
+            inter.step()
+        
+            time.sleep(0.1)
+            world.process()
+            pygame.display.flip()
+            
+            while (inter.pause):
+                pass
+
+    except KeyboardInterrupt:
+        return
     
 
 if __name__ == "__main__":

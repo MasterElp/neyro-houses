@@ -130,7 +130,6 @@ def draw_list(c_name, c_list, c_x = 20, c_y = 550, c_color = (250, 250, 0)):
    pygame.draw.polygon(image, c_color, poligon_points, 0)
    screen.blit(image, (c_x, c_y))
    screen_text(c_name  + ': ' + str(value), c_x, c_y + 20)
-   screen_text('scale:' + str(Control.scale), c_x, c_y)
 
 def draw_legend(c_x, c_y, c_color, c_width,c_population, c_next):
    screen = pygame.display.get_surface()
