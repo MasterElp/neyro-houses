@@ -239,7 +239,7 @@ class End(esper.Processor):
             if (not full.is_true):
                 not_full = True
         if (not not_full):
-            graph.screen_text("С днем святого Валентина, Алия! Я люблю тебя!", 325, 280, c_color = (200, 100, 50))
+            graph.screen_text("End", 325, 280, c_color = (200, 100, 50))
 
 def main():
     inter = Interface()
