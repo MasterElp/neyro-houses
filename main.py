@@ -66,9 +66,18 @@ class Position:
         self.y = y_
 
 class Paint:
-    def __init__(self, r_, g_, b_, alfa_):
+    """Init entity color (r, g, b, alfa)"""
+    def __init__(self, r_=50, g_=50, b_=50, alfa_=50):  
         self.color = (r_, g_, b_)
         self. alfa = alfa_
+
+class Life:
+    def __init__(self, age_=0):  
+        self.age = age_
+
+class Tree:
+    def __init__(self, bear_age_=10):
+        self.bear_age = bear_age_
 
 class Show(esper.Processor):
     def __init__(self):
@@ -78,26 +87,50 @@ class Show(esper.Processor):
         for entity, (position, paint) in self.world.get_components(Position, Paint):
             graph.draw_rect(position.x, position.y, paint.color, paint.alfa)
 
+class Grow(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        for entity, (life) in self.world.get_component(Life):
+            life.age += 1
+
 class Move(esper.Processor):
     def __init__(self):
         super().__init__()
 
     def process(self):
-        for entity, (position, paint) in self.world.get_components(Position, Paint):
-            position.x += 1
+        for entity, (position, mind) in self.world.get_components(Position, Mind):
+            position.x += random.randint(-1, 1)
+            position.y += random.randint(-1, 1)
+
+class Bear_Fruit(esper.Processor):
+    def __init__(self):
+        super().__init__()
+
+    def process(self):
+        for entity, (position, tree, life) in self.world.get_components(Position, Tree, Life):
+            if (life.age > tree.bear_age and Roll.dice_1000(50)):
+                x = position.x + random.randint(-2, 2)
+                y = position.y + random.randint(-2, 2)
+                fruit = self.world.create_entity(Position(x, y), Paint(200, 100, 150, 100))
 
 def main():
     inter = Interface()
     world = esper.World()
     random.seed()
     creature = {}
+    tree = {}
 
     for i in range (15):
-        creature[i] = world.create_entity(Mind(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100))
+        creature[i] = world.create_entity(Life(), Mind(), Position(random.randint(40, 80), random.randint(10, 50)), Paint(125, 125, 125, 100))
+        tree[i] = world.create_entity(Life(), Tree(20), Position(random.randint(40, 80), random.randint(10, 50)), Paint(50, 150, 50, 100))
 
 
     world.add_processor(Show())
     world.add_processor(Move())
+    world.add_processor(Grow())
+    world.add_processor(Bear_Fruit())
 
     
 
