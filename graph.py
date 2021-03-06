@@ -9,19 +9,20 @@ from pygame.locals import *
 import os
 
 
-
-SCALE = 10
+scale = 10
 
 def blit():
-    global screen
+    screen = pygame.display.get_surface()
+    background = pygame.Surface(screen.get_size())
     screen.blit(background, (0, 0))
 
 def flip():
-    pygame.display.flip()
+    pygame.display.flip()  
 
-def draw_background():
-    global background
-    global screen
+def init_window(c_max_x, c_max_y, caption):
+    pygame.init()
+    window = pygame.display.set_mode((c_max_x, c_max_y))
+    pygame.display.set_caption(caption)
     screen = pygame.display.get_surface()
     background = pygame.Surface(screen.get_size())
     background = background.convert()
@@ -30,14 +31,8 @@ def draw_background():
     #back, back_rect = load_image("back.bmp")
     #screen.blit(back, (0, 0))
     pygame.display.flip()
-
-def init_window(c_max_x, c_max_y, caption):  
-    pygame.init()
-    window = pygame.display.set_mode((c_max_x, c_max_y))
-    pygame.display.set_caption(caption)
-    draw_background()
     #pygame.mouse.set_visible(True)
-    #self.screen = pygame.display.get_surface()
+
 
 def load_image(name, colorkey = None):
     fullname = os.path.join('data', name)
@@ -48,7 +43,7 @@ def load_image(name, colorkey = None):
         raise SystemExit
     image = image.convert()
     if colorkey is not None:
-        if colorkey is -1:
+        if colorkey == -1:
             colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey, RLEACCEL)
     return image, image.get_rect()
@@ -77,30 +72,30 @@ def screen_text(c_text, c_x, c_y, c_color = (50, 200, 50)):
 
 def draw_rect(c_x, c_y, c_color, c_alfa = 255):
     screen = pygame.display.get_surface()
-    image = pygame.Surface((SCALE, SCALE))
+    image = pygame.Surface((scale, scale))
     image.set_alpha(c_alfa)
-    pygame.draw.rect (image, c_color, (0, 0, SCALE, SCALE))
+    pygame.draw.rect (image, c_color, (0, 0, scale, scale))
 
-    screen.blit(image, (c_x * SCALE, c_y * SCALE))
+    screen.blit(image, (c_x * scale, c_y * scale))
 
 def show_sprites(c_list):
     screen = pygame.display.get_surface()
     for element in c_list:
         element.area = screen.get_rect()
-        element.rect.x = element.x * SCALE
-        element.rect.y = element.y * SCALE
+        element.rect.x = element.x * scale
+        element.rect.y = element.y * scale
     sprites = pygame.sprite.Group(c_list)
     sprites.update()
     sprites.draw(screen)
 
 def draw_cursor(c_x, c_y, c_color):
     screen = pygame.display.get_surface()
-    image = pygame.Surface((SCALE, SCALE))
+    image = pygame.Surface((scale, scale))
     colorkey = image.get_at((0,0))
     image.set_colorkey(colorkey, RLEACCEL)
-    pygame.draw.rect (image, c_color, (0, 0, SCALE, SCALE), 3)
+    pygame.draw.rect (image, c_color, (0, 0, scale, scale), 3)
 
-    screen.blit(image, (c_x * SCALE, c_y * SCALE))
+    screen.blit(image, (c_x * scale, c_y * scale))
 
 def draw_direction_creature(c_x, c_y, c_dir, c_color1, c_color2, c_direction, c_height, c_width):
     screen = pygame.display.get_surface()
@@ -108,7 +103,7 @@ def draw_direction_creature(c_x, c_y, c_dir, c_color1, c_color2, c_direction, c_
     start_point = (c_direction, 0)
     end_point = (c_direction, c_height + 1)
 
-    image = pygame.Surface((SCALE, SCALE))
+    image = pygame.Surface((scale, scale))
     pygame.draw.line (image, c_color1, start_point, end_point, c_width)
     if c_dir == 3 :
         pygame.draw.line (image, c_color2, (0, c_height/2), (c_direction, c_height/2), 2)
@@ -120,7 +115,7 @@ def draw_direction_creature(c_x, c_y, c_dir, c_color1, c_color2, c_direction, c_
         pygame.draw.line (image, c_color2, (c_direction, c_height/2), (c_direction, c_height), 2)
     colorkey = image.get_at((0,0))
     image.set_colorkey(colorkey, RLEACCEL)
-    screen.blit(image, (c_x * SCALE, c_y * SCALE))
+    screen.blit(image, (c_x * scale, c_y * scale))
 
 def draw_list(c_name, c_list, c_x = 20, c_y = 550, c_color = (250, 250, 0)):
     screen = pygame.display.get_surface()
@@ -145,9 +140,9 @@ def draw_list(c_name, c_list, c_x = 20, c_y = 550, c_color = (250, 250, 0)):
 
 def draw_legend(c_x, c_y, c_color, c_width,c_population, c_next):
     screen = pygame.display.get_surface()
-    image = pygame.Surface((SCALE, SCALE))
-    pygame.draw.line (image, c_color, (SCALE/2, 0), (SCALE/2, SCALE/2), c_width)
+    image = pygame.Surface((scale, scale))
+    pygame.draw.line (image, c_color, (scale/2, 0), (scale/2, scale/2), c_width)
 
-    screen.blit(image, (c_x, c_y + c_next * SCALE * 2))
-    screen_text("pop:", c_x + SCALE * 2, c_y + c_next * SCALE * 2)
-    screen_text(c_population, c_x + SCALE * 7, c_y + c_next * SCALE * 2)
+    screen.blit(image, (c_x, c_y + c_next * scale * 2))
+    screen_text("pop:", c_x + scale * 2, c_y + c_next * scale * 2)
+    screen_text(c_population, c_x + scale * 7, c_y + c_next * scale * 2)
